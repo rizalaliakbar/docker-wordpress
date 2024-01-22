@@ -60,5 +60,5 @@ volumes:
   db-data:
 
 networks:
-  wordpress-network:
+  default:
     driver: bridge
