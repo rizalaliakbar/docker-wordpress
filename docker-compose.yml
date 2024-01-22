@@ -56,9 +56,6 @@ services:
       PMA_HOST: database
       MYSQL_ROOT_PASSWORD: '${MYSQL_ROOT_PASSWORD}'
 
-volumes:
-  db-data:
-
 networks:
   wordpress-network:
     driver: bridge
