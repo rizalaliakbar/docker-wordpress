@@ -1,0 +1,64 @@
+# create a local .env file with the following 4 properties:
+#
+# MYSQL_DATABASE=<something>
+# MYSQL_USER=<something>
+# MYSQL_PASSWORD=<something>
+# MYSQL_ROOT_PASSWORD=<something>
+#
+version: "3.8"
+
+services:
+
+  database:
+    # We use a mariadb image which supports both amd64 & arm64 architecture
+    image: mariadb:11.2.2-jammy
+    restart: always
+    ports:
+      - 3306:3306
+    env_file: .env
+    environment:
+      MYSQL_ROOT_PASSWORD: '${MYSQL_ROOT_PASSWORD}'
+      MYSQL_DATABASE: '${MYSQL_DATABASE}'
+      MYSQL_USER: '${MYSQL_USER}'
+      MYSQL_PASSWORD: '${MYSQL_PASSWORD}'
+    volumes:
+      - db-data:/var/lib/mysql
+    deploy:
+      resources:
+        limits:
+          memory: 10240m
+
+  phpmyadmin:
+    depends_on:
+      - database
+    image: phpmyadmin
+    restart: always
+    ports:
+      - 8081:80
+    env_file: .env
+    environment:
+      PMA_HOST: database
+      MYSQL_ROOT_PASSWORD: '${MYSQL_ROOT_PASSWORD}'
+
+  wordpress:
+    depends_on:
+      - database
+    image: wordpress:6.4.2-apache
+    restart: always
+    ports:
+      - 8080:80
+    env_file: .env
+    environment:
+      WORDPRESS_DB_HOST: database:3306
+      WORDPRESS_DB_NAME: '${MYSQL_DATABASE}'
+      WORDPRESS_DB_USER: '${MYSQL_USER}'
+      WORDPRESS_DB_PASSWORD: '${MYSQL_PASSWORD}'
+    volumes:
+      - ./apps:var/www/html
+
+volumes:
+  db-data:
+
+networks:
+  wordpress-network:
+    driver: bridge
